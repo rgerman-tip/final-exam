@@ -1,0 +1,16 @@
+---
+# tasks file for clone-prelim_centos
+- name: Create directory
+  file:
+    path: /home/ronel_23/repository
+    state: directory
+    mode: "777"
+
+- name: Clone Prelim Exam Repository
+  git:
+    repo: 'https://github.com/rgerman-tip/sysad2-12021.git'
+    dest: /home/ronel_23/repository
+    version: prelim-exam
+    clone: yes
+    update: yes
+    

@@ -1,0 +1,60 @@
+---
+# tasks file for vsftpd_opensuse
+- name: Install vsftpd 
+  zypper:
+    name: vsftpd
+    state: latest
+    update_cache: yes
+
+- name: Stop firewall
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+
+- name: Create FTP User
+  user:
+    name: ronel_ftp
+    password: $5$iYoQ4K8ReDKRJpr*$6OlzZj4CEh2uZfsB5/J3u47fl6VGuxZkf3nxdDiNyP7
+    comment: "FTP User"
+
+- name: create FTP group
+  group:
+    name: ftp_group
+
+- name: Add denyuser in etc/ssh/sshd_config directory
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "DenyUsers ronel_ftp"
+  register: sshd_config
+
+- name: Restart sshd service
+  service:
+    name: sshd
+    state: restarted
+  when: sshd_config.changed
+
+- name: Create FTP directory
+  file:
+    path: /home/ronel_ftp/ftp
+    state: directory
+    owner: ronel_ftp
+    group: ftp_group
+
+- name: Copy vsftpd.conf
+  copy:
+    src: vsftpd.conf
+    dest: /etc/vsftpd.conf
+  register: vsftpd_config
+
+- name: Delete a line in vsftpd.conf
+  lineinfile:
+    path: /etc/vsftpd.conf
+    regexp: 'secure_chroot_dir=/var/run/vsftpd/empty'
+    line: ''
+
+- name: Restart vsftpd service
+  service:
+    name: vsftpd
+    state: restarted
+  when: vsftpd_config.changed

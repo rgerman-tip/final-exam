@@ -1,0 +1,63 @@
+---
+# tasks file for vsftpd_ubuntu
+- name: Install vsftpd
+  apt:
+    name: vsftpd
+    state: latest
+    update_cache: yes
+
+- name: Stop firewall
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+
+- name: Create FTP user
+  user:
+    name: ronel_ftp
+    password: $5$GWTTTnYMJKXBp6CI$eIwEPpRLs4IWFOgdU7dugatYcrLOQsIC/DfgajZvb89
+    comment: "FTP User"
+
+- name: Create FTP Group
+  group:
+    name: ftp_group
+
+- name: Add deny user in /etc/ssh/sshd_config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "DenyUsers ronel_ftp"
+  register: ssh_config
+
+- name: Restart sshd service
+  service:
+    name: sshd
+    state: restarted
+  when: ssh_config.changed
+
+- name: Create FTP directory
+  file:
+    path: /home/ronel_ftp/ftp
+    state: directory
+    owner: ronel_ftp
+    group: ftp_group
+    mode: '0555'
+
+- name: Create FTP directory files
+  file:
+    path: /home/ronel_ftp/files
+    state: directory
+    owner: ronel_ftp
+    group: ftp_group
+
+- name: Copy the vsftpd.conf in /etc/vsftpd.conf file
+  copy:
+    src: vsftpd.conf
+    dest: /etc/vsftpd.conf
+  register: vsftpd_config
+
+- name: Restart vsftpd service
+  service:
+    name: vsftpd
+    state: restarted
+  when: vsftpd_config.changed
+    

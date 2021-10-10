@@ -1,0 +1,61 @@
+---
+# tasks file for vsftpd_centos
+- name: Install vsftpd service
+  yum:
+    name: vsftpd
+    state: latest
+    update_cache: yes
+
+- name: Stop firewall
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+
+- name: Create FTP user
+  user:
+    name: ronel_ftp
+    password: $5$3bCgxKihY/ED$8hZloTd6OUhPY24en3rGp2Y/NWZLwj3Zc.QCl.ViM3A
+    comment: "FTP User"
+
+- name: Create FTP Group
+  group:
+    name: ftp_group
+
+- name: Add denyuser in etc/ssh/sshd_config directory
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "denyusers ronel_ftp"
+  register: sshd_config
+
+- name: Restart sshd service
+  service:
+    name: sshd
+    state: restarted
+  when: sshd_config.changed
+
+- name: Create ftp directory
+  file:
+    path: /home/ronel_ftp/ftp
+    state: directory
+    owner: ronel_ftp
+    group: ftp_group
+
+- name: Copy file directory
+  file:
+    path: /home/ronel_ftp/ftp/files
+    state: directory
+    owner: ronel_ftp
+    group: ftp_group
+
+- name: Copy vsftpd.conf
+  copy:
+    src: vsftpd.conf
+    dest: /etc/vsftpd.conf
+  register: vsftpd_config
+
+- name: Restart vsftpd service
+  service:
+    name: vsftpd
+    state: restarted
+  when: vsftpd_config.changed
