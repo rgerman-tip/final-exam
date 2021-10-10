@@ -1,0 +1,28 @@
+---
+- hosts: ubuntu
+  vars_files:
+    - ./config.yml
+  roles:
+    - clone-prelim_ubuntu     #Clone Prelim Exam Repository
+    - vsftpd_ubuntu           #Enterprise Service
+    - prometheus_ubuntu       #Performance Monitoring Tool
+    - motd_ubuntu             #Message of the Day
+
+- hosts: centos
+  vars_files:
+    - ./config.yml
+  roles:
+    - clone-prelim_centos     #Clone Prelim Exam Repository
+    - vsftpd_centos           #Enterprise Service
+    - prometheus_centos       #Performance Monitoring Tool
+    - motd_centos             #Message of the Day  
+
+- hosts: opensuse
+  vars_files:
+    - ./config.yml
+  roles:
+    - clone-prelim_opensuse   #Clone Prelim Exam Repository
+    - vsftpd_opensuse         #Enterprise Service
+    - prometheus_opensuse     #Performance Monitoring Tool
+    - motd_opensuse           #Message of the Day
+
